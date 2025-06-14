@@ -76,7 +76,7 @@ else:
         if not title.strip():
             conn.close()
             sys.exit(1)
-        pages = int(input("Total pages: "))
+        pages = int(input("(total pages) "))
         c.execute("INSERT INTO books (title, number_of_pages) VALUES (?, ?)", (title, pages))
         conn.commit()
         bid = c.lastrowid
