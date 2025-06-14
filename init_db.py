@@ -2,7 +2,7 @@
 
 import sqlite3
 
-conn = sqlite3.connect('reading.db')
+conn = sqlite3.connect('project.db')
 c = conn.cursor()
 c.execute('''CREATE TABLE IF NOT EXISTS books 
              (id INTEGER PRIMARY KEY, title TEXT, number_of_pages INTEGER)''')

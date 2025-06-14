@@ -29,7 +29,7 @@ if '--swap' in sys.argv:
     try:
         idx = sys.argv.index('--swap')
         id1, id2 = map(int, sys.argv[idx+1:idx+3])
-        conn = sqlite3.connect('reading.db')
+        conn = sqlite3.connect('project.db')
         swap_ids(conn, id1, id2)
         conn.close()
         sys.exit(0)
@@ -44,7 +44,7 @@ for arg in sys.argv[1:]:
         bid_arg = int(arg)
         break
 
-conn = sqlite3.connect('reading.db')
+conn = sqlite3.connect('project.db')
 c = conn.cursor()
 
 if bid_arg is not None:
