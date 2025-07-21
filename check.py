@@ -83,12 +83,13 @@ else:
         print(f"{bid}: {title} ({total_pages} pages)")
 
     try:
-        bid = int(input(": "))
+        bid = int(input("\n: "))
+        print()
         c.execute("SELECT id FROM books WHERE id=?", (bid,))
         if c.fetchone() is None:
             raise ValueError
     except ValueError:
-        print("Invalid ID.")
+        print()
         conn.close()
         sys.exit(1)
 
