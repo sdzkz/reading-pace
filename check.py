@@ -87,6 +87,15 @@ else:
 c.execute("SELECT number_of_pages FROM books WHERE id=?", (bid,))
 total_pages = c.fetchone()[0]
 
+if bid_arg is not None:
+    print()
+    amidst_input = input("(amidst) ").strip().lower()
+    if amidst_input == 'y':
+        c.execute("UPDATE books SET amidst=1 WHERE id=?", (bid,))
+    elif amidst_input == 'n':
+        c.execute("UPDATE books SET amidst=0 WHERE id=?", (bid,))
+    conn.commit()
+
 try:
     current_page = int(input("(on page) "))
 except ValueError:
@@ -94,6 +103,8 @@ except ValueError:
 
 target_input = input("(target MM-DD) ").strip()
 now = datetime.now()
+
+print()
 
 if target_input:
     try:
@@ -130,14 +141,6 @@ for deadline in deadlines:
             continue
         seen_dates.add(date_str)
         print(f"Read {ppd:.1f} pages per day to finish by {date_str}")
-
-if bid_arg is not None:
-    amidst_input = input("(amidst) ").strip().lower()
-    if amidst_input == 'y':
-        c.execute("UPDATE books SET amidst=1 WHERE id=?", (bid,))
-    elif amidst_input == 'n':
-        c.execute("UPDATE books SET amidst=0 WHERE id=?", (bid,))
-    conn.commit()
 
 conn.close()
 
