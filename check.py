@@ -25,6 +25,8 @@ def swap_ids(conn, id1, id2):
     c.execute("UPDATE books SET id = ? WHERE id = -1", (id2,))
     conn.commit()
 
+print()
+
 if '--swap' in sys.argv:
     try:
         idx = sys.argv.index('--swap')
@@ -75,6 +77,7 @@ else:
         title = input("(title) ")
         if not title.strip():
             conn.close()
+            print()
             sys.exit(1)
         pages = int(input("(total pages) "))
         c.execute("INSERT INTO books (title, number_of_pages) VALUES (?, ?)", (title, pages))
@@ -138,3 +141,4 @@ if bid_arg is not None:
 
 conn.close()
 
+print()
