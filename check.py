@@ -1,10 +1,17 @@
 #!/usr/bin/env python3
+"""
+check.py – inspect progress for an existing book.
+No longer creates new books; use new.py for that.
+"""
 
 import sqlite3
 from datetime import datetime, timedelta
 import calendar
 import sys
 
+DB = 'project.db'
+
+# ---------- helpers ----------------------------------------------------------
 def get_month_end(dt, months_ahead=0):
     month = dt.month + months_ahead
     year = dt.year + (month - 1) // 12
@@ -14,7 +21,8 @@ def get_month_end(dt, months_ahead=0):
 
 def calculate_pages_needed(current_page, total_pages, deadline):
     remaining = total_pages - current_page
-    if remaining <= 0: return 0
+    if remaining <= 0:
+        return 0
     days_left = (deadline - datetime.now()).days + 1
     return remaining / max(1, days_left)
 
@@ -25,13 +33,14 @@ def swap_ids(conn, id1, id2):
     c.execute("UPDATE books SET id = ? WHERE id = -1", (id2,))
     conn.commit()
 
+# ---------- CLI handling -----------------------------------------------------
 print()
 
 if '--swap' in sys.argv:
     try:
         idx = sys.argv.index('--swap')
-        id1, id2 = map(int, sys.argv[idx+1:idx+3])
-        conn = sqlite3.connect('project.db')
+        id1, id2 = map(int, sys.argv[idx + 1 : idx + 3])
+        conn = sqlite3.connect(DB)
         swap_ids(conn, id1, id2)
         conn.close()
         sys.exit(0)
@@ -46,9 +55,10 @@ for arg in sys.argv[1:]:
         bid_arg = int(arg)
         break
 
-conn = sqlite3.connect('project.db')
+conn = sqlite3.connect(DB)
 c = conn.cursor()
 
+# ---------- select book ------------------------------------------------------
 if bid_arg is not None:
     c.execute("SELECT id, title, number_of_pages FROM books WHERE id=?", (bid_arg,))
     book = c.fetchone()
@@ -56,17 +66,21 @@ if bid_arg is not None:
         print(f"Book ID {bid_arg} not found.")
         conn.close()
         sys.exit(1)
-    _, title, number_of_pages = book
-    print(f"{title} ({number_of_pages} pages)")
-    bid = bid_arg
+    bid, title, total_pages = book
+    print(f"{title} ({total_pages} pages)")
 else:
     if show_all:
         c.execute("SELECT id, title, number_of_pages FROM books")
     else:
         c.execute("SELECT id, title, number_of_pages FROM books WHERE amidst=1")
     books = c.fetchall()
-    for bid, title, number_of_pages in books:
-        print(f"{bid}: {title} ({number_of_pages} pages)")
+    if not books:
+        print("No books found.")
+        conn.close()
+        sys.exit(0)
+
+    for bid, title, total_pages in books:
+        print(f"{bid}: {title} ({total_pages} pages)")
 
     try:
         bid = int(input(": "))
@@ -74,19 +88,11 @@ else:
         if c.fetchone() is None:
             raise ValueError
     except ValueError:
-        title = input("(title) ")
-        if not title.strip():
-            conn.close()
-            print()
-            sys.exit(1)
-        pages = int(input("(total pages) "))
-        c.execute("INSERT INTO books (title, number_of_pages) VALUES (?, ?)", (title, pages))
-        conn.commit()
-        bid = c.lastrowid
+        print("Invalid ID.")
+        conn.close()
+        sys.exit(1)
 
-c.execute("SELECT number_of_pages FROM books WHERE id=?", (bid,))
-total_pages = c.fetchone()[0]
-
+# ---------- update “amidst” flag ---------------------------------------------
 if bid_arg is not None:
     print()
     amidst_input = input("(amidst) ").strip().lower()
@@ -95,6 +101,10 @@ if bid_arg is not None:
     elif amidst_input == 'n':
         c.execute("UPDATE books SET amidst=0 WHERE id=?", (bid,))
     conn.commit()
+
+# ---------- progress input ---------------------------------------------------
+c.execute("SELECT number_of_pages FROM books WHERE id=?", (bid,))
+total_pages = c.fetchone()[0]
 
 try:
     current_page = int(input("(on page) "))
@@ -106,13 +116,13 @@ now = datetime.now()
 
 print()
 
+# ---------- deadlines & output -----------------------------------------------
 if target_input:
     try:
         month, day = map(int, target_input.split('-'))
         current_year = now.year
         tentative_date = datetime(current_year, month, day)
-        today = now.date()
-        if tentative_date.date() < today:
+        if tentative_date.date() < now.date():
             tentative_date = datetime(current_year + 1, month, day)
         deadlines = [tentative_date]
     except ValueError:
@@ -143,5 +153,4 @@ for deadline in deadlines:
         print(f"Read {ppd:.1f} pages per day to finish by {date_str}")
 
 conn.close()
-
 print()
