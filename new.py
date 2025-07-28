@@ -29,5 +29,5 @@ except ValueError:
 c.execute("INSERT INTO books (title, number_of_pages) VALUES (?, ?)", (title, pages))
 conn.commit()
 book_id = c.lastrowid
-print(f"Created book #{book_id}: {title} ({pages} pages)")
+print(":)\n")
 conn.close()
