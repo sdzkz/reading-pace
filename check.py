@@ -64,6 +64,7 @@ if bid_arg is not None:
     book = c.fetchone()
     if not book:
         print(f"Book ID {bid_arg} not found.")
+        print()
         conn.close()
         sys.exit(1)
     bid, title, total_pages = book
