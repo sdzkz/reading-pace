@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-check.py – inspect progress for an existing book.
+list.py – inspect progress for an existing book.
 No longer creates new books; use new.py for that.
 """
 
@@ -83,17 +83,6 @@ else:
     for bid, title, total_pages in books:
         print(f"{bid}: {title} ({total_pages} pages)")
 
-    try:
-        bid = int(input("\n: "))
-        print()
-        c.execute("SELECT id FROM books WHERE id=?", (bid,))
-        if c.fetchone() is None:
-            raise ValueError
-    except ValueError:
-        print()
-        conn.close()
-        sys.exit(1)
-
 # ---------- update “amidst” flag ---------------------------------------------
 if bid_arg is not None:
     print()
@@ -103,7 +92,9 @@ if bid_arg is not None:
     elif amidst_input == 'n':
         c.execute("UPDATE books SET amidst=0 WHERE id=?", (bid,))
     conn.commit()
-
+else: 
+    print()
+    sys.exit(0)
 # ---------- progress input ---------------------------------------------------
 c.execute("SELECT number_of_pages FROM books WHERE id=?", (bid,))
 total_pages = c.fetchone()[0]
